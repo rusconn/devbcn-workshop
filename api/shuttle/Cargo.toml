@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+api-lib = { path = "../lib" }
+
 actix-web = "4.3.1"
 shuttle-actix-web = "0.21.0"
 shuttle-runtime = "0.21.0"
@@ -17,4 +19,3 @@ sqlx = { version = "0.6.3", default-features = false, features = [
   "chrono",
   "json",
 ] }
-tracing = "0.1"

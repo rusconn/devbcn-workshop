@@ -3,7 +3,7 @@ use shuttle_actix_web::ShuttleActixWeb;
 use shuttle_runtime::CustomError;
 use sqlx::Executor;
 
-use api_lib::health::{hello_world, version};
+use api_lib::health::health;
 
 #[shuttle_runtime::main]
 async fn actix_web(
@@ -16,7 +16,7 @@ async fn actix_web(
     let pool = actix_web::web::Data::new(pool);
 
     let config = move |cfg: &mut ServiceConfig| {
-        cfg.app_data(pool).service(hello_world).service(version);
+        cfg.app_data(pool).service(health);
     };
 
     Ok(config.into())

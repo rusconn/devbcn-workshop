@@ -26,6 +26,25 @@ pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
         updated_at: None,
     });
 
+    {
+        let draft_film = draft_film.clone();
+
+        use_effect(cx, &cx.props.film, |film| async move {
+            match film {
+                Some(film) => draft_film.set(film),
+                None => draft_film.set(Film {
+                    title: "".to_string(),
+                    poster: "".to_string(),
+                    director: "".to_string(),
+                    year: 1900,
+                    id: Uuid::new_v4(),
+                    created_at: None,
+                    updated_at: None,
+                }),
+            }
+        });
+    }
+
     if !is_modal_visible.read().0 {
         return None;
     }

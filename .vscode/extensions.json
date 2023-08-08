@@ -6,6 +6,8 @@
     "tamasfe.even-better-toml",
     "swellaby.vscode-rust-test-adapter",
     "humao.rest-client",
-    "ckolkman.vscode-postgres"
+    "ckolkman.vscode-postgres",
+    "dioxuslabs.dioxus",
+    "bradlc.vscode-tailwindcss"
   ]
 }

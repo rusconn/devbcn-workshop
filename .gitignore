@@ -1,3 +1,5 @@
 /target
 static/
+dist/
+node_modules/
 Secrets*.toml

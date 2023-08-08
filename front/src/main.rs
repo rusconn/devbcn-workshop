@@ -55,6 +55,61 @@ fn App(cx: Scope) -> Element {
         });
     }
 
+    let delete_film = move |film_id| {
+        let force_get_films = force_get_films.clone();
+        cx.spawn({
+            async move {
+                let response = reqwest::Client::new()
+                    .delete(&format!("{}/{film_id}", &films_endpoint()))
+                    .send()
+                    .await;
+                match response {
+                    Ok(_data) => {
+                        log::info!("Film deleted");
+                        force_get_films.set(());
+                    }
+                    Err(err) => {
+                        log::info!("Error deleting film: {:?}", err);
+                    }
+                }
+            }
+        });
+    };
+
+    let create_or_update_film = move |film: Film| {
+        let force_get_films = force_get_films.clone();
+        let current_selected_film = selected_film.clone();
+        let is_modal_visible = is_modal_visible.clone();
+        cx.spawn({
+            async move {
+                let response = if current_selected_film.get().is_some() {
+                    reqwest::Client::new()
+                        .put(&films_endpoint())
+                        .json(&film)
+                        .send()
+                        .await
+                } else {
+                    reqwest::Client::new()
+                        .post(&films_endpoint())
+                        .json(&film)
+                        .send()
+                        .await
+                };
+                match response {
+                    Ok(_data) => {
+                        log::info!("Film created");
+                        current_selected_film.set(None);
+                        is_modal_visible.write().0 = false;
+                        force_get_films.set(());
+                    }
+                    Err(err) => {
+                        log::info!("Error creating film: {:?}", err);
+                    }
+                }
+            }
+        });
+    };
+
     cx.render(rsx! {
         main { class: "relative z-0 bg-blue-100 w-screen h-auto min-h-screen flex flex-col justify-start items-stretch",
             Header {}
@@ -72,7 +127,9 @@ fn App(cx: Scope) -> Element {
                                             selected_film.set(Some(film.clone()));
                                             is_modal_visible.write().0 = true
                                         },
-                                        on_delete: move |_| {}
+                                        on_delete: move |_| {
+                                            delete_film(film.id);
+                                        }
                                     }
                                 )
                             })}
@@ -83,7 +140,9 @@ fn App(cx: Scope) -> Element {
             Footer {}
             FilmModal {
                 film: selected_film.get().clone(),
-                on_create_or_update: move |_| {},
+                on_create_or_update: move |new_film| {
+                    create_or_update_film(new_film);
+                },
                 on_cancel: move |_| {
                     selected_film.set(None);
                     is_modal_visible.write().0 = false;

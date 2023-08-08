@@ -139,7 +139,7 @@ pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
                     }
                     Button {
                         button_type: ButtonType::Primary,
-                        onclick: move |evt| {
+                        onclick: move |_| {
                             cx.props.on_create_or_update.call(draft_film.get().clone());
                             draft_film
                                 .set(Film {

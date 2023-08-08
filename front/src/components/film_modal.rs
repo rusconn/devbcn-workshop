@@ -1,16 +1,30 @@
 use dioxus::prelude::*;
+use uuid::Uuid;
+
+use shared::models::Film;
 
 use crate::components::Button;
 use crate::models::{ButtonType, FilmModalVisibility};
 
 #[derive(Props)]
 pub struct FilmModalProps<'a> {
-    on_create_or_update: EventHandler<'a, MouseEvent>,
+    on_create_or_update: EventHandler<'a, Film>,
     on_cancel: EventHandler<'a, MouseEvent>,
+    #[props(!optional)]
+    film: Option<Film>,
 }
 
 pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
     let is_modal_visible = use_shared_state::<FilmModalVisibility>(cx).unwrap();
+    let draft_film = use_state::<Film>(cx, || Film {
+        title: "".to_string(),
+        poster: "".to_string(),
+        director: "".to_string(),
+        year: 1900,
+        id: Uuid::new_v4(),
+        created_at: None,
+        updated_at: None,
+    });
 
     if !is_modal_visible.read().0 {
         return None;
@@ -26,7 +40,15 @@ pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
                         input {
                             class: "w-full border border-gray-300 rounded-lg p-2",
                             "type": "text",
-                            placeholder: "Enter film title"
+                            placeholder: "Enter film title",
+                            value: "{draft_film.get().title}",
+                            oninput: move |evt| {
+                                draft_film
+                                    .set(Film {
+                                        title: evt.value.clone(),
+                                        ..draft_film.get().clone()
+                                    })
+                            }
                         }
                     }
                     div { class: "w-full",
@@ -34,7 +56,15 @@ pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
                         input {
                             class: "w-full border border-gray-300 rounded-lg p-2",
                             "type": "text",
-                            placeholder: "Enter film director"
+                            placeholder: "Enter film director",
+                            value: "{draft_film.get().director}",
+                            oninput: move |evt| {
+                                draft_film
+                                    .set(Film {
+                                        director: evt.value.clone(),
+                                        ..draft_film.get().clone()
+                                    })
+                            }
                         }
                     }
                     div { class: "w-full",
@@ -42,7 +72,15 @@ pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
                         input {
                             class: "w-full border border-gray-300 rounded-lg p-2",
                             "type": "number",
-                            placeholder: "Enter film year"
+                            placeholder: "Enter film year",
+                            value: "{draft_film.get().year.to_string()}",
+                            oninput: move |evt| {
+                                draft_film
+                                    .set(Film {
+                                        year: evt.value.clone().parse::<u16>().unwrap_or(1900),
+                                        ..draft_film.get().clone()
+                                    })
+                            }
                         }
                     }
                     div { class: "w-full",
@@ -50,20 +88,50 @@ pub fn FilmModal<'a>(cx: Scope<'a, FilmModalProps>) -> Element<'a> {
                         input {
                             class: "w-full border border-gray-300 rounded-lg p-2",
                             "type": "text",
-                            placeholder: "Enter film poster URL"
+                            placeholder: "Enter film poster URL",
+                            value: "{draft_film.get().poster}",
+                            oninput: move |evt| {
+                                draft_film
+                                    .set(Film {
+                                        poster: evt.value.clone(),
+                                        ..draft_film.get().clone()
+                                    })
+                            }
                         }
                     }
                 }
                 footer { class: "flex flex-row justify-center items-center mt-4 gap-x-2",
                     Button {
                         button_type: ButtonType::Secondary,
-                        onclick: move |evt| { cx.props.on_cancel.call(evt) },
+                        onclick: move |evt| {
+                            draft_film
+                                .set(Film {
+                                    title: "".to_string(),
+                                    poster: "".to_string(),
+                                    director: "".to_string(),
+                                    year: 1900,
+                                    id: Uuid::new_v4(),
+                                    created_at: None,
+                                    updated_at: None,
+                                });
+                            cx.props.on_cancel.call(evt)
+                        },
                         "Cancel"
                     }
                     Button {
                         button_type: ButtonType::Primary,
                         onclick: move |evt| {
-                            cx.props.on_create_or_update.call(evt);
+                            cx.props.on_create_or_update.call(draft_film.get().clone());
+                            draft_film
+                                .set(Film {
+                                    title: "".to_string(),
+                                    poster: "".to_string(),
+                                    director: "".to_string(),
+                                    year: 1900,
+                                    id: Uuid::new_v4(),
+                                    created_at: None,
+                                    updated_at: None,
+                                });
                         },
                         "Save film"
                     }

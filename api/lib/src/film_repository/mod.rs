@@ -1,5 +1,7 @@
+mod memory;
 mod postgres;
 
+pub use memory::MemoryFilmRepository;
 pub use postgres::PostgresFilmRepository;
 
 use uuid::Uuid;
